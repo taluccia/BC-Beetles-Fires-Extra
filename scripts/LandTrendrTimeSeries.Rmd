@@ -1,0 +1,243 @@
+---
+title: "LandTrendr Time Series"
+author: "Anna Talucci"
+date: "6/7/2021"
+output: html_document
+---
+
+-
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Overview
+LandTrendr Time Series Analysis
+NBR, NDMI, and NDVI
+
+# Packages
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(RColorBrewer)
+library(cowplot)
+```
+
+# Data
+```{r}
+chndmi = read.csv("../data/LT-TS/2019-04-04_chelaslie_pico_NDMI.csv", header=TRUE, sep = ",", strip.white = TRUE)
+head(chndmi)
+```
+
+
+```{r}
+enndmi = read.csv("../data/LT-TS/2019-04-04_entiako_pico_NDMI.csv", header=TRUE, sep = ",", strip.white = TRUE)
+head(enndmi)
+```
+
+```{r}
+twnmdi = read.csv("../data/LT-TS/2019-04-04_tweeds_pico_NDMI.csv", header=TRUE, sep = ",", strip.white = TRUE)
+head(twnmdi)
+```
+
+# Organize Data
+## Chelaslie
+### Extract Sourced Data
+```{r}
+chndmiorg2 = chndmi%>%dplyr::select(Year:Original)
+chndmiorg2 = chndmiorg2%>%mutate(line_type = "raw")
+chndmiorg2 = rename(chndmiorg2, year = Year, ndmi=Original, line_type=line_type)
+chndmiorg2
+```
+
+### Extract Fitted Data
+```{r}
+chndmifit2 = chndmi%>%dplyr::select(Year, Fitted)
+chndmifit2 = chndmifit2%>%mutate(line_type = "fit")
+chndmifit2 = rename(chndmifit2, year = Year, ndmi=Fitted, line_type=line_type)
+chndmifit2
+```
+
+### COmbine sourced and fitted data
+```{r}
+chndmi1 = rbind(chndmiorg2, chndmifit2)
+summary(chndmi1)
+```
+
+## Entako
+
+### Extract Sourced Data
+```{r}
+enndmiorg3 = enndmi %>% 
+  dplyr::select(Year:Original) %>% 
+  mutate(line_type = "raw") %>%
+  rename(year = Year, ndmi=Original, line_type=line_type) %>%
+  filter(ndmi > 0)
+enndmiorg3
+```
+
+### Extract Fitted Data
+```{r}
+enndmifit3 = enndmi %>% 
+  dplyr::select(Year, Fitted) %>%
+  mutate(line_type = "fit") %>%
+  rename(year = Year, ndmi=Fitted, line_type=line_type)
+
+enndmifit3
+```
+
+### Combine sourced and Fitted Data
+```{r}
+enndmi1 = rbind(enndmiorg3, enndmifit3)
+summary(enndmi1)
+```
+
+## Tweeds
+### Extract Sourced Data
+```{r}
+twndmiorg4 = twnmdi%>%dplyr::select(Year:Original)
+twndmiorg4=twndmiorg4%>%mutate(line_type = "raw")
+twndmiorg4 = rename(twndmiorg4, year = Year, ndmi=Original, line_type=line_type)
+twndmiorg4
+```
+### Extract Fitted Data
+```{r}
+twndmifit4 = twnmdi%>%dplyr::select(Year, Fitted)
+twndmifit4 = twndmifit4%>%mutate(line_type = "fit")
+twndmifit4 = rename(twndmifit4, year = Year, ndmi=Fitted, line_type=line_type)
+twndmifit4
+```
+### Combine sourced and Fitted Data
+```{r}
+twnmdi1 = rbind(twndmiorg4, twndmifit4)
+summary(twnmdi1)
+```
+
+
+# Graph Sourced and Fitted Data
+## Chelaslie
+
+
+```{r}
+( chndmi1_plot1 = ggplot(chndmi1, aes(x = year, y = ndmi, color = line_type)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("#2b83ba", "#f03b20"), name="",
+                         breaks=c("raw", "fit"),
+                         labels=c("Source", "Fitted")) +
+    ylab(label="NDMI") + 
+  xlab("Year") +
+  theme_bw() +
+    geom_vline(aes(xintercept=2000), colour="darkorange2", linetype="dashed", size=1)  +
+  geom_vline(aes(xintercept=2006), colour="darkorange2", linetype="dashed", size=1)  + 
+  theme(legend.position = "none") +
+    theme(plot.margin = unit(c(t = 0.3, r = 0.1, b = 0.3, l = 0.1), "cm")) +
+    theme(axis.title.x = element_text(size = 11, hjust = 0.5, vjust = -0.1),
+        axis.title.y = element_text(size = 11, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black")) )
+
+```
+
+
+
+## Entiako
+
+
+```{r}
+
+( enndmi1_plot1 = ggplot(enndmi1, aes(x = year, y = ndmi, color = line_type)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("#2b83ba", "#f03b20"), name="",
+                         breaks=c("raw", "fit"),
+                         labels=c("Source", "Fitted")) +
+    ylab(label="NDMI") + 
+  xlab("Year") +
+  theme_bw() +
+     geom_vline(aes(xintercept=2000), colour="darkorange2", linetype="dashed", size=1)  +
+  geom_vline(aes(xintercept=2006), colour="darkorange2", linetype="dashed", size=1)  +  
+  theme(legend.position = "none") +
+    theme(plot.margin = unit(c(t = 0.3, r = 0.1, b = 0.3, l = 0.1), "cm")) +
+    theme(axis.title.x = element_text(size = 11, hjust = 0.5, vjust = -0.1),
+        axis.title.y = element_text(size = 11, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black")) )
+
+
+```
+
+
+## Tweeds 
+
+```{r}
+(twndmi1_plot1 = ggplot(twnmdi1, aes(x = year, y = ndmi, color = line_type)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("#2b83ba", "#f03b20"), name="",
+                         breaks=c("raw", "fit"),
+                         labels=c("Source", "Fitted")) +
+    ylab(label="NDMI") + 
+  xlab("Year") +
+  geom_vline(aes(xintercept=2000), colour="darkorange2", linetype="dashed", size=1)  +
+  geom_vline(aes(xintercept=2006), colour="darkorange2", linetype="dashed", size=1)  +
+  theme_bw() +
+       theme(legend.position = "none") +
+    theme(plot.margin = unit(c(t = 0.3, r = 0.1, b = 0.3, l = 0.1), "cm")) +
+    theme(axis.title.x = element_text(size = 11, hjust = 0.5, vjust = -0.1),
+        axis.title.y = element_text(size = 11, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black")) )
+
+```
+
+
+
+# Figures
+## Legend
+```{r}
+(legend_lt = ggplot(twnmdi1, aes(x = year, y = ndmi, color = line_type)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("#2b83ba", "#f03b20"), name="",
+                         breaks=c("raw", "fit"),
+                         labels=c("Source", "Fitted")) +
+    ylab(label="NBR") + 
+  xlab("Year") +
+  theme_bw() +
+   theme(legend.position = "bottom") +
+    theme(plot.margin = unit(c(t = 0.3, r = 0.1, b = 0.3, l = 0.1), "cm")) +
+    theme(axis.title.x = element_text(size = 11, hjust = 0.5, vjust = -0.1),
+        axis.title.y = element_text(size = 11, hjust = 0.5, vjust = 1.1),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black")) )
+```
+
+## NDMI 
+```{r fig.height=6, fig.width=3}
+legend = cowplot::get_legend(legend_lt)
+
+gpndmi7 = cowplot::plot_grid(enndmi1_plot1, twndmi1_plot1, chndmi1_plot1, align = "hv", ncol= 1)  +
+  draw_label("Entiako", x = .29, y = .77, size = 10, fontface = "bold") +
+  draw_label("Tweedsmuir", x = .33, y = .44, size = 10, fontface = "bold") +
+  draw_label("Chelaslie", x = .30, y = .11, size = 10, fontface = "bold") +
+  
+   draw_label("(a)", x = .04, y = .98, size = 10) +
+   draw_label("(b)", x = .04, y = .65, size = 10) +
+   draw_label("(c)", x = .04, y = .32, size = 10)  
+
+gpndmi7
+```
+
+
+
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/LandTrendrTimeSeries.tiff", plot = gpndmi7, width = 3, height = 6, units = c("in"), dpi=600 )
+```
+
+**THE END**

@@ -1,0 +1,387 @@
+---
+title: "GEE-Sampled Points"
+author: "Anna Talucci"
+date: "6/5/2021"
+output: html_document
+---
+
+# Clear workspace
+
+```{r}
+rm(list=ls()) 
+```
+
+
+## Library
+```{r include=FALSE}
+
+
+library(dplyr)
+
+library(ggplot2)
+```
+
+
+
+# Data
+```{r}
+endata = read.csv("../data/2.1-GEE-Sampled/2021-06-07_EnSampledValues.csv", header=TRUE, sep = ",", strip.white = TRUE)
+twdata = read.csv("../data/2.1-GEE-Sampled/2021-06-07_TWSampledValues.csv", header=TRUE, sep = ",", strip.white = TRUE)
+chdata = read.csv("../data/2.1-GEE-Sampled/2021-06-07_ChSampledValues.csv", header=TRUE, sep = ",", strip.white = TRUE)
+```
+
+
+# Data Inspection
+```{r}
+summary(endata)
+```
+
+```{r}
+summary(twdata)
+```
+```{r}
+summary(chdata)
+```
+
+#  Visualize Data
+
+## Entiako
+```{r}
+ggplot(endata, aes(x=ndviprefire)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(endata, aes(x=elevation)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(endata, aes(x=fwi)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(endata, aes(x=dndmi)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(endata, aes(x=rdnbr)) + geom_histogram() 
+```
+
+## Tweeds
+```{r}
+ggplot(twdata, aes(x=ndviprefire)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(twdata, aes(x=elevation)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(twdata, aes(x=fwi)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(twdata, aes(x=dndmi)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(twdata, aes(x=rdnbr)) + geom_histogram() 
+```
+
+
+## Chelaslie
+```{r}
+ggplot(chdata, aes(x=ndviprefire)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(chdata, aes(x=elevation)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(chdata, aes(x=fwi)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(chdata, aes(x=dndmi)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(chdata, aes(x=rdnbr)) + geom_histogram() 
+```
+
+# Combine data
+
+```{r}
+
+endata1 = endata %>% 
+  dplyr::select(ASPTR:rdnbr) %>%
+  rename(org_rdnbr=EN_rdnbr) %>%
+  mutate(FireYr = 2012)
+endata1
+```
+
+```{r}
+
+twdata1 = twdata %>% 
+  dplyr::select(ASPTR:rdnbr) %>%
+  rename(org_rdnbr=TW_rdnbr) %>%
+  mutate(FireYr = 2013)
+twdata1
+```
+
+
+```{r}
+
+chdata1 = chdata %>% 
+  dplyr::select(ASPTR:rdnbr) %>%
+  rename(org_rdnbr=CH_rdnbr) %>%
+  mutate(FireYr = 2014)
+chdata1
+```
+
+
+```{r}
+df = bind_rows(endata1, twdata1, chdata1)
+df
+```
+
+
+```{r}
+summary(df)
+```
+
+```{r}
+df
+```
+
+## Visualize all
+
+```{r}
+ggplot(df, aes(x=ndviprefire)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(df, aes(x=elevation)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(df, aes(x=fwi)) + geom_histogram() 
+```
+
+
+```{r}
+ggplot(df, aes(x=dndmi)) + geom_histogram() 
+```
+
+
+
+```{r}
+ggplot(df, aes(x=rdnbr)) + geom_histogram() 
+```
+
+
+# Filter
+
+```{r}
+df1 = df  %>% 
+  filter(rdnbr %in% (-500:2000) )
+
+df1
+```
+
+
+
+# Add variables
+
+If the pixel burned as high severity, it’s a 1 (present); if thepixel burned as other it was absent, it’s a 0.
+
+```{r}
+df2 = df1 %>%
+  mutate(fwi_lohi = ifelse(fwi<= 29, 1, 2)) %>%
+  mutate(rdnbr_class = ifelse(rdnbr<= 641, 0, 1))
+
+df2
+
+```
+
+# Write to csv
+```{r eval=FALSE, include=FALSE}
+write.csv(df2, '../outputs/CombinedData/CombineData.csv', row.names = FALSE)
+```
+
+```{r}
+df3 = df2 %>% filter(fwi >= 14)
+df3
+```
+
+```{r eval=FALSE, include=FALSE}
+write.csv(df3, '../outputs/CombinedData/CombineDataModExt.csv', row.names = FALSE)
+```
+
+```{r}
+df3 %>% 
+  count(FireYr)
+```
+
+```{r}
+
+df3 %>% 
+  count(rdnbr_class) 
+
+df3 %>% 
+  filter(fwi_lohi == "1") %>%
+  count(rdnbr_class) 
+
+df3 %>% 
+  filter(fwi_lohi == "2") %>%
+  count(rdnbr_class) 
+```
+
+
+```{r}
+
+df3 %>% 
+  count(FireYr) 
+```
+
+
+**DELETE**
+#  DELETE!!!!
+# Create Training Data
+## Randomly sample 60%  of data
+
+
+
+```{r}
+set.seed(15)
+train.data = df2 %>% 
+  group_by(fwi_lohi, rdnbr_class) %>%
+  sample_frac(0.6)
+train.data
+```
+
+```{r}
+summary(train.data)
+```
+
+
+
+
+
+
+```{r}
+train.data %>% 
+  count(rdnbr_class) 
+```
+
+```{r}
+train.data %>% 
+  count(FireYr) 
+```
+
+```{r}
+train.data %>% group_by(FireYr) %>%
+  summarise(count= n()) 
+```
+
+```{r}
+train.data %>% 
+  filter(fwi_lohi == "1") %>%
+  count(rdnbr_class) 
+```
+
+```{r}
+train.data %>% 
+  filter(fwi_lohi == "2") %>%
+  count(rdnbr_class) 
+```
+
+# Write to csv
+```{r eval=FALSE, include=FALSE}
+write.csv(train.data, '../outputs/TrainingData/TrainData.csv', row.names = FALSE)
+```
+
+
+num_groups = 10
+
+iris %>% 
+   group_by((row_number()-1) %/% (n()/num_groups)) %>%
+   nest %>% pull(data)
+
+
+# Hitograms of trainning data
+
+
+
+```{r}
+h1 = ggplot(train.data, aes(x=ndviprefire)) + geom_histogram(color="black", fill="white") +
+  xlab("NDVI") +
+  theme_bw()
+```
+
+```{r}
+h2 = ggplot(train.data, aes(x=fwi)) + geom_histogram(color="black", fill="white") +
+  xlab("FWI") +
+  theme_bw()
+```
+
+
+
+```{r}
+h3 = ggplot(train.data, aes(x=elevation)) + geom_histogram(color="black", fill="white") +
+  xlab("Elevation (m)") +
+  theme_bw()
+```
+
+```{r}
+h4 = ggplot(train.data, aes(x=dndmi)) + geom_histogram(color="black", fill="white") +
+  xlab("dNDMI") +
+  theme_bw()
+```
+
+
+
+
+
+```{r}
+h5 = ggplot(train.data, aes(x=rdnbr)) + geom_histogram(color="black", fill="white") +
+  xlab("RdNBR") +
+  theme_bw()
+```
+
+
+```{r fig.height=7, fig.width=6}
+( grid2 = cowplot::plot_grid(h1, h2, h4, h3, h5, align = "hv", ncol= 2) +
+    
+   draw_label("(a)", x = .13, y = .97, size = 10) +
+   draw_label("(b)", x = .63, y = .97, size = 10) +
+   draw_label("(c)", x = .13, y = .64, size = 10) +
+   draw_label("(d)", x = .63, y = .64, size = 10) +
+    draw_label("(e)", x = .13, y = .31, size = 10))
+```
+
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/Histograms.png", plot = grid2, width = 6, height = 7, units = c("in"), dpi=600 )
+```
